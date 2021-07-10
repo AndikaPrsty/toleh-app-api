@@ -2,11 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const db = require("../database");
-const {
-  createIdToko,
-  createIdUser,
-  createIdLokasi,
-} = require("../utils/createId");
+const { createIdToko, createIdLokasi } = require("../utils/createId");
 
 const addToko = async (req, res) => {
   const {
@@ -85,7 +81,108 @@ const getAllToko = async (req, res) => {
   }
 };
 
+const deleteToko = async (req, res) => {
+  const { id_toko, id_user } = req.body;
+
+  try {
+    let toko = await db.toko.findFirst({ where: { id: id_toko } });
+    let user = await db.user.findFirst({ where: { id: id_user } });
+
+    if (toko == null)
+      return res.status(404).json({ error: "toko tidak ditemukan" });
+
+    if (toko.id_user == id_user || user.role == "ADMIN") {
+      await db.lokasi.delete({ where: { id_toko } });
+      await db.toko.delete({
+        where: { id: id_toko },
+      });
+      return res.json({ message: "toko berhasil dihapus" });
+    } else {
+      return res.json(401).json({ error: "unauthorized" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.json(500).json({ error: "something went wrong" });
+  }
+};
+
+const updateToko = async (req, res) => {
+  const {
+    id_toko,
+    id_user,
+    jam_buka,
+    jam_tutup,
+    nama_toko,
+    jalan,
+    provinsi,
+    kabupaten,
+    kecamatan,
+    kelurahan,
+    kode_pos,
+  } = req.body;
+  try {
+    let user = await db.user.findFirst({ where: { id: id_user } });
+    let toko = await db.toko.findFirst({ where: { id: id_toko } });
+
+    if (toko == null)
+      return res.status(404).json({ error: "toko tidak ditemukan" });
+
+    if (toko.id_user == id_user || user.role == "ADMIN") {
+      await db.toko.update({
+        where: { id: id_toko },
+        data: {
+          jam_buka,
+          jam_tutup,
+          nama_toko,
+          Lokasi: {
+            update: {
+              jalan,
+              provinsi,
+              kabupaten,
+              kecamatan,
+              kelurahan,
+              kode_pos: parseInt(kode_pos),
+              alamat_lengkap: `${jalan}, ${kelurahan}, ${kecamatan}, ${kabupaten}, ${provinsi}, ${kode_pos}`,
+            },
+          },
+        },
+      });
+
+      return res.json({ message: "toko berhasil diperbarui" });
+    } else {
+      return res.status(402).json({ error: "unauthorized" });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "somethig went wrong" });
+  }
+};
+
+const updateLNG = async (req, res) => {
+  const { id_toko, id_user } = req.body;
+  try {
+    let toko = await db.toko.findFirst({ where: { id: id_toko } });
+    let user = await db.user.findFirst({ where: { id: id_user } });
+
+    if (toko == null)
+      return res.status(404).json({ error: "toko tidak ditemukan" });
+
+    if (toko.id_user == user.id || user.role == "ADMIN") {
+      await db.toko.update({
+        data: { Lokasi: { update: { latitude, longitude } } },
+      });
+
+      return res.json({ message: "sukses update koordinat" });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "something went wrong" });
+  }
+};
+
 router.post("/", addToko);
 router.get("/", getAllToko);
-
+router.post("/delete", deleteToko);
+router.post("/update", updateToko);
+router.post("/update_koordinat", updateLNG);
 module.exports = router;

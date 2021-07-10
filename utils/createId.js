@@ -7,9 +7,7 @@ const createIdUser = async (role) => {
   randomChar = randomString(10);
 
   if (role === "ADMIN") {
-    id = `ADMIN_${firstChar}${randomChar}`;
-  } else if (role === "OWNER") {
-    id = `OWNER${firstChar}${randomChar}`;
+    id = `ADMN${firstChar}${randomChar}`;
   } else {
     id = `USER${firstChar}${randomChar}`;
   }
@@ -23,7 +21,7 @@ const createIdToko = async () => {
   firstChar = new Date().getFullYear().toString();
   randomChar = randomString(10);
 
-  return `TOKO_${firstChar}${randomChar}`;
+  return `TOKO${firstChar}${randomChar}`;
 };
 
 const createIdLokasi = async () => {
@@ -32,7 +30,16 @@ const createIdLokasi = async () => {
   firstChar = new Date().getFullYear().toString();
   randomChar = randomString(10);
 
-  return `LOKASI_${firstChar}${randomChar}`;
+  return `LKSI${firstChar}${randomChar}`;
 };
 
-module.exports = { createIdLokasi, createIdToko, createIdUser };
+const createIdProduk = async () => {
+  let firstChar, randomChar;
+
+  firstChar = new Date().getFullYear().toString();
+  randomChar = randomString(10);
+
+  return `PRDK${firstChar}${randomChar}`;
+};
+
+module.exports = { createIdLokasi, createIdToko, createIdUser, createIdProduk };

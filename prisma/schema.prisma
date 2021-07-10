@@ -43,7 +43,7 @@ model Toko {
 model Produk {
   id String @id @db.VarChar(50)
   uuid String @default(uuid()) @db.VarChar(50)
-  id_jenis String  @db.VarChar(50)
+  url_gambar String @db.VarChar(200)
   id_toko String  @db.VarChar(50)
   nama_produk String  @db.VarChar(15)
   createdAt DateTime @default(now()) @map("created_at")
@@ -56,7 +56,7 @@ model Produk {
 model Lokasi {
   id String @id @db.VarChar(50)
   uuid String @default(uuid()) @db.VarChar(50)
-  id_toko String @db.VarChar(50)
+  id_toko String @unique @db.VarChar(50)
   latitude Float
   longitude Float
   alamat_lengkap String @db.VarChar(255)
