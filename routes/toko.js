@@ -70,6 +70,33 @@ const addToko = async (req, res) => {
   }
 };
 
+const getTokoByProduk = async (req, res) => {
+  const { cari_produk } = req.body;
+  console.log(cari_produk);
+
+  try {
+    let toko = await db.toko.findMany({
+      where: {
+        Produk: { some: { nama_produk: { contains: cari_produk } } },
+      },
+      include: { Lokasi: true },
+      orderBy: { createdAt: "asc" },
+    });
+
+    if (toko == null) {
+      return res
+        .status(404)
+        .json({ error: "produk yang anda cari tidak ditemukan" });
+    } else {
+      console.log(toko);
+      return res.json(toko);
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "something went wrong" });
+  }
+};
+
 const getAllToko = async (req, res) => {
   try {
     let toko = await db.toko.findMany({ include: { Lokasi: true } });
@@ -159,7 +186,7 @@ const updateToko = async (req, res) => {
 };
 
 const updateLNG = async (req, res) => {
-  const { id_toko, id_user } = req.body;
+  const { id_toko, id_user, latitude, longitude } = req.body;
   try {
     let toko = await db.toko.findFirst({ where: { id: id_toko } });
     let user = await db.user.findFirst({ where: { id: id_user } });
@@ -169,10 +196,45 @@ const updateLNG = async (req, res) => {
 
     if (toko.id_user == user.id || user.role == "ADMIN") {
       await db.toko.update({
-        data: { Lokasi: { update: { latitude, longitude } } },
+        where: {
+          id: id_toko,
+        },
+        data: {
+          Lokasi: {
+            update: {
+              latitude: parseFloat(latitude),
+              longitude: parseFloat(longitude),
+            },
+          },
+        },
       });
 
       return res.json({ message: "sukses update koordinat" });
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "something went wrong" });
+  }
+};
+
+const updateGambarToko = async (req, res) => {
+  const { id_toko, id_user, url_gambar } = req.body;
+
+  try {
+    let user = await db.user.findFirst({ where: { id: id_user } });
+    let toko = await db.toko.findFirst({ where: { id: id_toko } });
+
+    if (toko == null) {
+      return res.status(404).json({ error: "toko tidak ditemukan" });
+    }
+
+    if (toko.id_user == user.id || user.role == "ADMIN") {
+      await db.toko.update({
+        where: { id: toko.id },
+        data: { url_gambar },
+      });
+
+      return res.json({ message: "sukses update gambar toko" });
     }
   } catch (err) {
     console.log(err);
@@ -185,4 +247,6 @@ router.get("/", getAllToko);
 router.post("/delete", deleteToko);
 router.post("/update", updateToko);
 router.post("/update_koordinat", updateLNG);
+router.post("/update_gambar", updateGambarToko);
+router.post("/cari_produk", getTokoByProduk);
 module.exports = router;
