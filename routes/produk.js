@@ -43,7 +43,15 @@ const hapusProduk = async (req, res) => {
 };
 
 const updateProduk = async (req, res) => {
-  const { id_produk, id_toko, id_user, nama_produk, url_gambar } = req.body;
+  const {
+    id_produk,
+    id_toko,
+    id_user,
+    nama_produk,
+    url_gambar,
+    detail_produk,
+    harga_produk,
+  } = req.body;
   try {
     let produk = await db.produk.findFirst({ where: { id: id_produk } });
     let toko = await db.toko.findFirst({ where: { id: id_toko } });
@@ -59,7 +67,12 @@ const updateProduk = async (req, res) => {
     ) {
       await db.produk.update({
         where: { id: id_produk },
-        data: { nama_produk, url_gambar },
+        data: {
+          nama_produk,
+          url_gambar,
+          detail_produk,
+          harga_produk: parseInt(harga_produk),
+        },
       });
       return res.json({ message: "sukses mengupdate produk" });
     }
@@ -70,7 +83,14 @@ const updateProduk = async (req, res) => {
 };
 
 const tambahProduk = async (req, res) => {
-  const { id_user, id_toko, nama_produk, url_gambar } = req.body;
+  const {
+    id_user,
+    id_toko,
+    nama_produk,
+    url_gambar,
+    detail_produk,
+    harga_produk,
+  } = req.body;
   const id_produk = await createIdProduk();
 
   try {
@@ -90,6 +110,8 @@ const tambahProduk = async (req, res) => {
               id: id_produk,
               nama_produk,
               url_gambar,
+              detail_produk,
+              harga_produk: parseInt(harga_produk),
             },
           },
         },

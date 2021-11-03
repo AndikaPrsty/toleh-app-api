@@ -120,6 +120,7 @@ const deleteToko = async (req, res) => {
 
     if (toko.id_user == id_user || user.role == "ADMIN") {
       await db.lokasi.delete({ where: { id_toko } });
+      await db.produk.delete({ where: { id_toko } });
       await db.toko.delete({
         where: { id: id_toko },
       });
